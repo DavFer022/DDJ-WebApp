@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDJ.Infrastructure", "DDJ.I
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDJ.Api", "DDJ.Api\DDJ.Api.csproj", "{D3E6BD48-BA03-4C47-B0F6-022C53623CD3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDJ.Tests", "DDJ.Tests\DDJ.Tests.csproj", "{8E473248-BFD5-4A1D-94FC-036C09E4B381}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{D3E6BD48-BA03-4C47-B0F6-022C53623CD3}.Release|x64.Build.0 = Release|Any CPU
 		{D3E6BD48-BA03-4C47-B0F6-022C53623CD3}.Release|x86.ActiveCfg = Release|Any CPU
 		{D3E6BD48-BA03-4C47-B0F6-022C53623CD3}.Release|x86.Build.0 = Release|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Debug|x64.Build.0 = Debug|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Debug|x86.Build.0 = Debug|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Release|x64.ActiveCfg = Release|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Release|x64.Build.0 = Release|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Release|x86.ActiveCfg = Release|Any CPU
+		{8E473248-BFD5-4A1D-94FC-036C09E4B381}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,14 +2,20 @@ namespace DDJ.Domain.Enums;
 
 public enum OrderStatus
 {
+    /// <summary>Pedido creado, esperando confirmación de pago.</summary>
     Pending = 0,
+    /// <summary>Pago confirmado por el admin (MVP) o por la pasarela (V1).</summary>
     Confirmed = 1,
-    Paid = 2,
-    Processing = 3,
-    Shipped = 4,
-    Delivered = 5,
-    Cancelled = 6,
-    Refunded = 7
+    /// <summary>En preparación para envío.</summary>
+    Processing = 2,
+    /// <summary>Enviado al cliente.</summary>
+    Shipped = 3,
+    /// <summary>Entregado al cliente.</summary>
+    Delivered = 4,
+    /// <summary>Pedido cancelado.</summary>
+    Cancelled = 5,
+    /// <summary>Pago reembolsado.</summary>
+    Refunded = 6
 }
 
 public enum CustomOrderStatus
@@ -30,12 +36,20 @@ public enum CustomOrderStatus
 
 public enum PaymentStatus
 {
+    /// <summary>Sin pago registrado.</summary>
     Pending = 0,
-    Authorized = 1,
-    Captured = 2,
-    Failed = 3,
-    Refunded = 4,
-    PartiallyRefunded = 5
+    /// <summary>Pago confirmado manualmente por el admin (MVP).</summary>
+    Confirmed = 1,
+    /// <summary>Pago autorizado por pasarela (V1).</summary>
+    Authorized = 2,
+    /// <summary>Pago capturado/cobrado por pasarela (V1).</summary>
+    Captured = 3,
+    /// <summary>Pago rechazado.</summary>
+    Failed = 4,
+    /// <summary>Pago reembolsado.</summary>
+    Refunded = 5,
+    /// <summary>Pago parcialmente reembolsado.</summary>
+    PartiallyRefunded = 6
 }
 
 public enum ShipmentStatus

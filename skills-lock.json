@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "dotnet-backend-patterns": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "624af9f8faea713dadaa51fc2f2040a4b365b4e083b9b9f82d7e9df1f627ea79"
+    },
+    "next-best-practices": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "computedHash": "c31ddd68ba5798a79a516c619b1e1fc4408cc4876ad600fefa4f5add4425719d"
+    }
+  }
+}

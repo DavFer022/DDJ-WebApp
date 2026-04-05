@@ -1,0 +1,295 @@
+// ==========================================
+// 1. Identidad y Acceso
+// ==========================================
+
+Table User {
+  id uuid [primary key]
+  email varchar [unique, not null]
+  password_hash varchar [not null]
+  first_name varchar
+  last_name varchar
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+  refresh_token varchar
+  refresh_token_expiry_time timestamp
+}
+
+Table Role {
+  id uuid [primary key]
+  name varchar [unique, not null]
+  description varchar
+}
+
+Table Permission {
+  id uuid [primary key]
+  name varchar [unique, not null]
+  description varchar
+}
+
+Table UserRole {
+  user_id uuid [ref: > User.id]
+  role_id uuid [ref: > Role.id]
+  
+  indexes {
+    (user_id, role_id) [pk]
+  }
+}
+
+Table RolePermission {
+  role_id uuid [ref: > Role.id]
+  permission_id uuid [ref: > Permission.id]
+
+  indexes {
+    (role_id, permission_id) [pk]
+  }
+}
+
+// ==========================================
+// 2. Clientes
+// ==========================================
+
+Table CustomerProfile {
+  id uuid [primary key]
+  user_id uuid [ref: - User.id, unique] // Relación 1-1 opcional (null para compras guest)
+  phone_number varchar
+  birth_date date
+  preferences jsonb
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+// ==========================================
+// 3. Catálogo
+// ==========================================
+
+Table ProductCategory {
+  id uuid [primary key]
+  name varchar [not null]
+  slug varchar [unique, not null]
+  description text
+  image_url varchar
+  is_active boolean [default: true]
+}
+
+Table ProductCategoryHierarchy {
+  parent_category_id uuid [ref: > ProductCategory.id]
+  child_category_id uuid [ref: > ProductCategory.id]
+  
+  indexes {
+    (parent_category_id, child_category_id) [pk]
+  }
+}
+
+Table Product {
+  id uuid [primary key]
+  name varchar [not null]
+  slug varchar [unique, not null]
+  description text
+  category_id uuid [ref: > ProductCategory.id]
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table ProductVariant {
+  id uuid [primary key]
+  product_id uuid [ref: > Product.id]
+  sku varchar [unique, not null]
+  size varchar // Ej: S, M, L, XL
+  color varchar // Ej: Rojo, Azul, Negro
+  is_active boolean [default: true]
+}
+
+Table ProductImage {
+  id uuid [primary key]
+  product_id uuid [ref: > Product.id]
+  variant_id uuid [ref: > ProductVariant.id] // Opcional, si afecta a una variante específica
+  image_url varchar [not null]
+  is_primary boolean [default: false]
+  display_order int [default: 0]
+}
+
+Table Price {
+  id uuid [primary key]
+  product_variant_id uuid [ref: > ProductVariant.id]
+  base_price decimal(18,2) [not null]
+  discount_price decimal(18,2)
+  currency varchar [default: 'USD']
+  valid_from timestamp
+  valid_to timestamp
+}
+
+// ==========================================
+// 4. Inventario
+// ==========================================
+
+Table InventoryItem {
+  id uuid [primary key]
+  product_variant_id uuid [ref: - ProductVariant.id, unique] // 1 a 1 con la variante
+  quantity_available int [default: 0]
+  quantity_reserved int [default: 0]
+  reorder_level int [default: 5]
+  updated_at timestamp [default: `now()`]
+}
+
+// ==========================================
+// 5. Direcciones
+// ==========================================
+
+Table BillingAddress {
+  id uuid [primary key]
+  customer_id uuid [ref: > CustomerProfile.id]
+  full_name varchar [not null]
+  address_line1 varchar [not null]
+  address_line2 varchar
+  city varchar [not null]
+  state varchar [not null]
+  postal_code varchar [not null]
+  country varchar [not null]
+  phone varchar
+}
+
+Table ShippingAddress {
+  id uuid [primary key]
+  customer_id uuid [ref: > CustomerProfile.id]
+  full_name varchar [not null]
+  address_line1 varchar [not null]
+  address_line2 varchar
+  city varchar [not null]
+  state varchar [not null]
+  postal_code varchar [not null]
+  country varchar [not null]
+  phone varchar
+  is_default boolean [default: false]
+}
+
+// ==========================================
+// 6. Carrito y Pedidos
+// ==========================================
+
+Table Cart {
+  id uuid [primary key]
+  customer_id uuid [ref: > CustomerProfile.id] // Puede ser nulo si es anónimo
+  session_id varchar [unique] // Clave para carrito anónimo en frontend
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table CartItem {
+  id uuid [primary key]
+  cart_id uuid [ref: > Cart.id]
+  product_variant_id uuid [ref: > ProductVariant.id]
+  quantity int [not null, default: 1]
+  added_at timestamp [default: `now()`]
+}
+
+Table Order {
+  id uuid [primary key]
+  order_number varchar [unique, not null]
+  customer_id uuid [ref: > CustomerProfile.id]
+  status varchar [not null] // Ej: PendingPayment, Confirmed, Processing, Shipped, Delivered, Cancelled
+  payment_status varchar [not null, default: 'Pending'] // Ej: Pending, Confirmed, Refunded (confirmación manual por admin en MVP)
+  payment_method varchar // Ej: Transfer, Cash, Nequi, etc. (registrado manualmente)
+  total_amount decimal(18,2) [not null]
+  shipping_address_id uuid [ref: > ShippingAddress.id]
+  billing_address_id uuid [ref: > BillingAddress.id]
+  notes text // Notas del cliente o admin
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table OrderItem {
+  id uuid [primary key]
+  order_id uuid [ref: > Order.id]
+  product_variant_id uuid [ref: > ProductVariant.id]
+  quantity int [not null]
+  unit_price decimal(18,2) [not null]
+  subtotal decimal(18,2) [not null]
+}
+
+// ==========================================
+// 7. Pagos y Envíos — DIFERIDO A V1
+// ==========================================
+// Las siguientes tablas se implementarán en V1 con la integración de pasarela de pago:
+//   - Payment (integración Stripe/PayPal)
+//   - PaymentTransaction (log de transacciones del gateway)
+//   - Shipment (envíos con transportista)
+//   - ShipmentTracking (seguimiento de envíos)
+//
+// En MVP, el pago se confirma manualmente por el admin
+// a través del campo payment_status en Order.
+
+// ==========================================
+// 8. Pedidos Personalizados (DTF/Sublimación)
+// ==========================================
+
+Table CustomOrder {
+  id uuid [primary key]
+  order_number varchar [unique, not null]
+  customer_id uuid [ref: > CustomerProfile.id]
+  status varchar [not null] // Ej: PendingReview, Quoted, Approved, InDesign, InPrinting
+  quoted_amount decimal(18,2)
+  payment_status varchar [default: 'Pending'] // Confirmación manual en MVP (Pending, Confirmed)
+  shipping_address_id uuid [ref: > ShippingAddress.id]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table CustomOrderItem {
+  id uuid [primary key]
+  custom_order_id uuid [ref: > CustomOrder.id]
+  description text [not null] // Especificaciones generales del ítem
+  quantity int [not null]
+  unit_price decimal(18,2) // Provisto post-cotización
+}
+
+Table CustomDesignFile {
+  id uuid [primary key]
+  custom_order_id uuid [ref: > CustomOrder.id]
+  file_url varchar [not null] // URL de Cloudinary u otro bucket
+  file_name varchar
+  file_type varchar // Ej: png, pdf, ai
+  uploaded_at timestamp [default: `now()`]
+}
+
+Table CustomSpecification {
+  id uuid [primary key]
+  custom_order_id uuid [ref: > CustomOrder.id]
+  print_area varchar // Ej: Frente, Espalda, Pecho Izquierdo
+  dimensions varchar // Ej: 20x30cm, A3, A4
+  technique varchar // Ej: DTF, Vinilo, Sublimación
+  additional_notes text
+}
+
+Table CustomOrderStatusHistory {
+  id uuid [primary key]
+  custom_order_id uuid [ref: > CustomOrder.id]
+  status varchar [not null]
+  notes text
+  changed_by uuid [ref: > User.id] // El personal que cambió el estado
+  changed_at timestamp [default: `now()`]
+}
+
+// ==========================================
+// 9. Auditoría y Notificaciones
+// ==========================================
+
+Table AuditLog {
+  id uuid [primary key]
+  entity_name varchar [not null]
+  entity_id varchar [not null]
+  action varchar [not null] // CREATE, UPDATE, DELETE
+  changes jsonb // Payload con el Before/After
+  user_id uuid [ref: > User.id] // Quién originó el cambio
+  created_at timestamp [default: `now()`]
+}
+
+Table NotificationLog {
+  id uuid [primary key]
+  user_id uuid [ref: > User.id] // Nullable si se envió a alguien sin usuario registrado
+  recipient_email varchar [not null]
+  notification_type varchar [not null] // Ej: OrderConfirmation, StatusUpdate
+  status varchar [not null] // Sent, Failed
+  sent_at timestamp
+}

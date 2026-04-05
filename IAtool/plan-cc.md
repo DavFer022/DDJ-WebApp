@@ -87,18 +87,26 @@ frontend/
 
 ## Módulos Principales
 
+### MVP
+
 1. Autenticación y autorización (JWT)
-2. Gestión de usuarios, roles y permisos
+2. Gestión de usuarios y roles básicos
 3. Catálogo de productos, categorías y variantes
 4. Inventario y stock
 5. Carrito de compras (anónimo y autenticado)
-6. Checkout, pagos y métodos de envío
-7. Gestión de pedidos estándar
+6. Checkout básico (sin pasarela de pago integrada, confirmación manual por admin)
+7. Gestión de pedidos estándar (estados básicos, sin tracking de envío)
 8. Gestión de clientes
-9. Pedidos personalizados DTF/sublimación
-10. Gestión de archivos/diseños subidos
-11. Reportes de ventas, pedidos e inventario
-12. Notificaciones (email)
+9. Pedidos personalizados DTF/sublimación (solicitud + archivos + estados básicos)
+10. Gestión de archivos/diseños subidos (Cloudinary)
+
+### Fase Futura (V1)
+
+11. Integración de pasarela de pago (Stripe/PayPal + webhooks)
+12. Tracking de pedidos y envíos (Shipment, ShipmentTracking)
+13. Roles y permisos granulares
+14. Reportes de ventas, pedidos e inventario
+15. Notificaciones (email)
 
 ---
 
@@ -127,12 +135,10 @@ frontend/
 
 - `Cart` – `CartItem`
 - `Order` – `OrderItem`
-- `Payment` – `PaymentTransaction`
 
-### Direcciones y envíos
+### Direcciones
 
 - `ShippingAddress` – `BillingAddress`
-- `Shipment` – `ShipmentTracking`
 
 ### Pedidos personalizados
 
@@ -145,6 +151,11 @@ frontend/
 
 - `AuditLog`
 - `NotificationLog`
+
+### Fase Futura (se agregarán en V1)
+
+- `Payment` – `PaymentTransaction` (integración con pasarela)
+- `Shipment` – `ShipmentTracking` (tracking de envíos)
 
 ---
 
@@ -193,17 +204,17 @@ frontend/
 | DELETE | `/cart/items/{id}` |
 | DELETE | `/cart`            |
 
-### Checkout, Pedidos y Pagos
+### Checkout y Pedidos
 
-| Método | Endpoint                      |
-| ------ | ----------------------------- |
-| POST   | `/checkout/summary`           |
-| POST   | `/checkout/place-order`       |
-| GET    | `/orders`                     |
-| GET    | `/orders/{id}`                |
-| PATCH  | `/orders/{id}/status` (Admin) |
-| POST   | `/payments/create-session`    |
-| POST   | `/payments/webhook`           |
+| Método | Endpoint                      | Nota                                            |
+| ------ | ----------------------------- | ----------------------------------------------- |
+| POST   | `/checkout/summary`           |                                                 |
+| POST   | `/checkout/place-order`       | Crea pedido sin pago integrado                  |
+| GET    | `/orders`                     |                                                 |
+| GET    | `/orders/{id}`                |                                                 |
+| PATCH  | `/orders/{id}/status` (Admin) | Admin confirma pago manualmente y cambia estados |
+
+> **Nota:** Los endpoints de pagos (`/payments/*`) y envíos (`/shipments/*`) se implementarán en V1 con la integración de pasarela de pago y tracking.
 
 ### Clientes (perfil propio)
 
@@ -218,13 +229,6 @@ frontend/
 | ------ | ----------------- |
 | GET    | `/customers`      |
 | GET    | `/customers/{id}` |
-
-### Envíos
-
-| Método    | Endpoint             |
-| --------- | -------------------- |
-| GET       | `/shipping/methods`  |
-| GET/PATCH | `/shipments` (Admin) |
 
 ### Pedidos Personalizados DTF/Sublimación
 
@@ -288,7 +292,6 @@ frontend/
 │   │   └── /:orderId
 │   └── /pedidos-personalizados
 │       └── /:customOrderId
-├── /pedidos/seguimiento/:trackingCode
 ├── /personalizado
 │   ├── /crear-solicitud
 │   └── /:customOrderId
@@ -336,9 +339,8 @@ frontend/
 - [ ] CRUD Productos, Categorías, Variantes
 - [ ] Gestión básica de inventario por variante
 - [ ] Módulo Carrito (anónimo + autenticado con merge al login)
-- [ ] Checkout básico + cálculo de total + dirección de envío
-- [ ] Integración pasarela de pago (webhook)
-- [ ] Gestión de pedidos estándar (estados, tracking básico)
+- [ ] Checkout básico + cálculo de total + dirección de envío (sin pasarela de pago)
+- [ ] Gestión de pedidos estándar (estados básicos, confirmación manual de pago por admin)
 - [ ] Modelo inicial CustomOrder (crear solicitud + subir archivos + estados básicos)
 - [ ] Integración con Cloudinary (subida de diseños)
 
@@ -350,7 +352,7 @@ frontend/
 - [ ] Página Catálogo con filtros (categoría, precio, talla, color)
 - [ ] Página Detalle de producto
 - [ ] Carrito de compras (contexto global)
-- [ ] Flujo Checkout (dirección, resumen, pago)
+- [ ] Flujo Checkout (dirección, resumen, confirmación sin pago online)
 - [ ] Registro e inicio de sesión
 - [ ] Panel de cuenta: perfil + pedidos básicos
 - [ ] Panel Admin: CRUD productos, categorías, inventario, listado de pedidos
@@ -361,6 +363,9 @@ frontend/
 
 **Backend (.NET)**
 
+- [ ] Integración pasarela de pago (Stripe/PayPal + webhooks)
+- [ ] Modelo Payment + PaymentTransaction
+- [ ] Tracking de envíos (Shipment, ShipmentTracking)
 - [ ] Roles y permisos granulares (middleware de autorización por rol)
 - [ ] Gestión avanzada de pedidos personalizados (cotización, aprobación)
 - [ ] Reportes operativos (ventas por fecha, por producto)
@@ -370,6 +375,8 @@ frontend/
 
 **Frontend (Next.js)**
 
+- [ ] Integración UI pasarela de pago en checkout
+- [ ] Página de seguimiento de envío (`/pedidos/seguimiento/:trackingCode`)
 - [ ] Búsqueda por nombre, código, categoría jerárquica
 - [ ] Historial de pedidos detallado + reordenar
 - [ ] Panel de pedidos personalizados con timeline de estados
@@ -399,16 +406,18 @@ frontend/
 
 ## Flujos Principales
 
-### Compra Estándar
+### Compra Estándar (MVP)
 
 1. Visitante navega catálogo y filtra productos
 2. Agrega variantes al carrito (sesión anónima)
 3. Inicia sesión / se registra (carrito se fusiona)
-4. Selecciona dirección y método de envío
+4. Selecciona dirección de envío
 5. Sistema calcula totales
-6. Confirma y paga (redirige a pasarela)
-7. Webhook confirma pago → pedido marcado como pagado → Shipment creado
-8. Cliente sigue el estado desde su panel
+6. Cliente confirma pedido (sin pago online, se genera pedido en estado "Pendiente de pago")
+7. Admin confirma recepción de pago manualmente → pedido cambia a "Confirmado"
+8. Cliente sigue el estado básico desde su panel
+
+> **V1:** Se integrará pasarela de pago (Stripe/PayPal) para automatizar el paso 6-7 y tracking de envíos.
 
 ### Pedido Personalizado DTF/Sublimación
 

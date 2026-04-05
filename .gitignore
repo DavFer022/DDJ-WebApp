@@ -34,3 +34,8 @@ yarn-error.log*
 *.tmp
 .DS_Store
 Thumbs.db
+
+# Agents
+.agents/
+.agents/skills/
+.agents/skills-lock.json
